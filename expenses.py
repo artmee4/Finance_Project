@@ -126,4 +126,25 @@ def _get_budget_limit() -> int:
     """Возвращает дневной лимит трат для основных базовых трат"""
     return db.fetchall("budget", ["daily_limit"])[0]["daily_limit"]
 
-get_all_statistics_per_month()
+def get_all_AllExpenses() -> str:
+    now = _get_now_datetime()
+    first_day_of_month = f'{now.year:04d}-{now.month:02d}-01'
+    cursor = db.get_cursor()
+    cursor.execute(f"SELECT  amount, "
+                   f"(SELECT category.name FROM category "
+                   f"WHERE category.codename = expense.category_codename) AS CName "
+                   f"FROM expense ")
+    # f"where created > current_date - interval '1 week'; >= '{first_day_of_month}'")
+    result = cursor.fetchall()
+    if not result[0]:
+        return "В этом месяце ещё нет расходов"
+    dt = {}
+    for i in range(len(result)):
+        if result[i][1] not in dt:
+            dt[result[i][1]] = result[i][0]
+        else:
+            dt[result[i][1]] += result[i][0]
+    dt
+
+    # all_stats = dict((y, x) for x, y in result)
+    return dt
