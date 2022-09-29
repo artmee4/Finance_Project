@@ -89,7 +89,7 @@ def get_month_statistics() -> str:
             f"{30 * _get_budget_limit()} руб.\n")
 
 
-def get_all_statistics_per_month() -> str:
+def get_all_statistics_per_month_notstring():
     now = _get_now_datetime()
     first_day_of_month = f'{now.year:04d}-{now.month:02d}-01'
     cursor = db.get_cursor()
@@ -100,7 +100,6 @@ def get_all_statistics_per_month() -> str:
         # f"where created > current_date - interval '1 week'; >= '{first_day_of_month}'")
     result = cursor.fetchall()
 
-
     if not result[0]:
         return "В этом месяце ещё нет расходов"
     dt = {}
@@ -109,9 +108,11 @@ def get_all_statistics_per_month() -> str:
             dt[result[i][1]] = result[i][0]
         else:
             dt[result[i][1]] += result[i][0]
-    dt
+    return dt
 
+def get_all_statistics_per_month() -> str:
     # all_stats = dict((y, x) for x, y in result)
+    dt = get_all_statistics_per_month_notstring()
     return (f"Всего потрачено \n"
             f"{[(k, v) for k, v in dt.items()]}")
 
