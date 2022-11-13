@@ -11,7 +11,7 @@ from categories import Categories
 
 
 API_TOKEN = '5477041709:AAFksJ7Uga3TZX5pFSp757ntKjkA9Lp9QnA'
-ACCESS_ID = 598856945
+ACCESS_ID = 
 
 logging.basicConfig(level=logging.INFO)
 
