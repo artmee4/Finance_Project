@@ -1,7 +1,9 @@
 from typing import Dict, List, NamedTuple
 
 import db
-
+import re
+import Exceptions
+from googletrans import Translator, constants
 
 class Category(NamedTuple):
     """Структура категории"""
@@ -58,3 +60,50 @@ class Categories:
         if not finded:
             finded = other_category
         return finded
+
+
+#TODO: добавить команды ниже для вызова из телеги
+#Введите текст в следующем формате: название категории
+# (прим: Здоровье, относится к базовым потребностям или нет (да/нет), алиасы (прим для здоровья: врач, лекарства, диетолог)
+def add_category(raw_message: str):
+    messageToInsert = parsed_message(raw_message)
+    db.insert("category", {
+        "codename": messageToInsert[0],
+        "name": messageToInsert[1],
+        "is_base_expense": messageToInsert[2],
+        "aliases": messageToInsert[3]})
+
+def parsed_message(raw_message: str):
+    raw_message = raw_message.split(",")
+    translation = Translator()
+    translation = translation.translate(raw_message[0])
+    codename = translation.text
+    name = raw_message[0]
+    if raw_message == "да" or "Да":
+        is_base_expense = False
+    else:
+        is_base_expense = True
+    aliases = []
+    for i in raw_message[2:]:
+        aliases.append(i)
+    aliases = ",".join(aliases)
+    return codename, name, is_base_expense,aliases
+
+#add_category('здоровье, нет, лекарства, врач, диетолог')
+def add_alias(cat: str, raw_message:str):
+    category = cat
+    raw_text = raw_message
+    aliases = ", " + raw_text
+    cursor = db.get_cursor()
+    cursor.execute(f"UPDATE category SET aliases = CONCAT(aliases, '{aliases}') "
+                     f"WHERE name = '{category}'")
+    connection = db.connection
+    connection.commit()
+
+
+
+#add_alias('здоровье', 'туалетная бумага, анальгин')
+
+#print(add_alias('здоровье', 'туалетная бумага, анальгин'))
+
+
